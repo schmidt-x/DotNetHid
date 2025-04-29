@@ -6,7 +6,19 @@ namespace HidNet;
 public static class Hid
 {
 	private static readonly HidDevices Instance;
-
+	
+	/// <summary>
+	/// Enables or disables warning output to the console. Useful for diagnosing issues such as a connected device is not
+	/// included in the enumeration list, often because it couldn't be opened for metadata retrieval — for example,
+	/// if another process had it open with exclusive sharing rights.
+	/// Must be set before calling <see cref="Enumerate"/> or <see cref="Create"/> to take effect. 
+	/// </summary>
+	public static bool OutputWarnings
+	{
+		get => Instance.OutputWarnings;
+		set => Instance.OutputWarnings = value;
+	}
+	
 	static Hid()
 	{
 		if (OperatingSystem.IsWindows())
@@ -45,7 +57,7 @@ public static class Hid
 	/// <returns>A <see cref="HidDevice"/> instance representing the device.</returns>
 	public static HidDevice Create(HidDeviceInfo deviceInfo)
 	{
-		ArgumentNullException.ThrowIfNull(deviceInfo, nameof(deviceInfo));
+		ArgumentNullException.ThrowIfNull(deviceInfo);
 		return Instance.Create(deviceInfo);
 	}
 }
