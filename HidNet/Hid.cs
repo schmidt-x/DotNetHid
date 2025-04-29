@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using HidNet.Platform.Windows;
 
 namespace HidNet;
 
@@ -23,7 +24,7 @@ public static class Hid
 	{
 		if (OperatingSystem.IsWindows())
 		{
-			throw new NotImplementedException("Windows system is not implemented");
+			Instance = new WindowsHidDevices();
 		}
 		else if (OperatingSystem.IsLinux())
 		{
