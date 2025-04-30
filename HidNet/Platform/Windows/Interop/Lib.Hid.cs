@@ -14,7 +14,7 @@ internal static partial class Hid
 	
 	[LibraryImport(LibName, SetLastError = true)]
 	[return: MarshalAs(UnmanagedType.U1)]
-	internal static partial bool HidD_GetAttributes(HANDLE hidDeviceObject, out HIDD_ATTRIBUTES attributes);
+	internal static partial bool HidD_GetAttributes(HANDLE hidDeviceObject, ref HIDD_ATTRIBUTES attributes);
 	
 	[LibraryImport(LibName, SetLastError = true)]
 	[return: MarshalAs(UnmanagedType.U1)]

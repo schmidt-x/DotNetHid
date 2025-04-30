@@ -2,7 +2,7 @@
 
 namespace HidNet.Platform.Windows.Interop;
 
-// resharper disable InconsistentNaming
+// ReSharper disable InconsistentNaming
 internal static class Constants
 {
 	#region setupapi.h

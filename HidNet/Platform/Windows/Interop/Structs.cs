@@ -4,20 +4,20 @@ using Microsoft.Win32.SafeHandles;
 
 namespace HidNet.Platform.Windows.Interop;
 
-// Resharper disable InconsistentNaming
+// ReSharper disable InconsistentNaming
 internal static class Structs
 {
 	#region setupapi.h
 
 	[StructLayout(LayoutKind.Sequential)]
-	internal struct SP_DEVICE_INTERFACE_DATA
+	internal unsafe struct SP_DEVICE_INTERFACE_DATA
 	{
 		internal UInt32  cbSize;
 		internal Guid    InterfaceClassGuid;
 		internal UInt32  Flags;
 		internal UIntPtr Reserved;
 		
-		public SP_DEVICE_INTERFACE_DATA() => cbSize = (UInt32)Marshal.SizeOf<SP_DEVICE_INTERFACE_DATA>();
+		public SP_DEVICE_INTERFACE_DATA() => cbSize = (UInt32)sizeof(SP_DEVICE_INTERFACE_DATA);
 	}
 	
 	// Since the size of this structure is dynamic, due to the WCHAR DevicePath[ANYSIZE_ARRAY] member,
@@ -49,28 +49,39 @@ internal static class Structs
 	#region hidsdi.h
 	
 	[StructLayout(LayoutKind.Sequential)]
-	internal struct HIDD_ATTRIBUTES
+	internal unsafe struct HIDD_ATTRIBUTES
 	{
 		internal UInt32 Size;
 		internal UInt16 VendorID;
 		internal UInt16 ProductID;
 		internal UInt16 VersionNumber;
 
-		public HIDD_ATTRIBUTES() => Size = (UInt32)Marshal.SizeOf<HIDD_ATTRIBUTES>();
+		public HIDD_ATTRIBUTES() => Size = (UInt32)sizeof(HIDD_ATTRIBUTES);
 	}
 	
 	#endregion
 	
 	#region hidpi.h
 	
-	[StructLayout(LayoutKind.Sequential, Size = 64)]
-	internal struct HIDP_CAPS
+	[StructLayout(LayoutKind.Sequential)]
+	internal unsafe struct HIDP_CAPS
 	{
 		internal UInt16 Usage;
 		internal UInt16 UsagePage;
 	  internal UInt16 InputReportByteLength;
 	  internal UInt16 OutputReportByteLength;
-	  // TODO: add the rest of the members
+	  internal UInt16 FeatureReportByteLength;
+	  internal fixed UInt16 Reserved[17];
+	  internal UInt16 NumberLinkCollectionNodes;
+	  internal UInt16 NumberInputButtonCaps;
+	  internal UInt16 NumberInputValueCaps;
+	  internal UInt16 NumberInputDataIndices;
+	  internal UInt16 NumberOutputButtonCaps;
+	  internal UInt16 NumberOutputValueCaps;
+	  internal UInt16 NumberOutputDataIndices;
+	  internal UInt16 NumberFeatureButtonCaps;
+	  internal UInt16 NumberFeatureValueCaps;
+	  internal UInt16 NumberFeatureDataIndices;
 	}
 	
 	#endregion

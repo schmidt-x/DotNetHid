@@ -31,7 +31,8 @@ internal class WindowsHidDevices : HidDevices
 				continue;
 			}
 			
-			if (!Interop.Hid.HidD_GetAttributes(hDevice, out Structs.HIDD_ATTRIBUTES attributes))
+			var attributes = new Structs.HIDD_ATTRIBUTES();
+			if (!Interop.Hid.HidD_GetAttributes(hDevice, ref attributes))
 			{
 				if (!OutputWarnings) continue;
 				error = Marshal.GetLastPInvokeError();
@@ -51,7 +52,6 @@ internal class WindowsHidDevices : HidDevices
 			}
 			
 			Structs.HIDP_CAPS caps;
-			
 			try
 			{
 				if (Interop.Hid.HidP_GetCaps(preparsedData, out caps) != HIDP_STATUS_SUCCESS)
@@ -176,12 +176,12 @@ internal class WindowsHidDevices : HidDevices
 			paths.Add(interfaceDetailData.DevicePath);
 		}
 
-		if ((error = Marshal.GetLastPInvokeError()) == ERROR_NO_MORE_ITEMS)
+		if ((error = Marshal.GetLastPInvokeError()) != ERROR_NO_MORE_ITEMS)
 		{
-			return paths;
+			Helpers.Log($"Device Interface enumeration failed (index: {index-1}): {Helpers.GetFormattedErrorMessage(error)}");
+			return [];
 		}
 		
-		Helpers.Log($"Device Interface enumeration failed: {Helpers.GetFormattedErrorMessage(error)}");
-		return [];
+		return paths;
 	}
 }
