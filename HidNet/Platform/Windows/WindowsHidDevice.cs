@@ -11,15 +11,13 @@ namespace HidNet.Platform.Windows;
 
 internal class WindowsHidDevice : HidDevice
 {
-	private readonly HidDeviceInfo _deviceInfo;
 	private readonly bool _outputWarnings;
 	
 	private HANDLE? _handle;
 	private bool _isOpen;
 
-	internal WindowsHidDevice(HidDeviceInfo deviceInfo, bool outputWarnings)
+	internal WindowsHidDevice(HidDeviceInfo info, bool outputWarnings) : base(info)
 	{
-		_deviceInfo = deviceInfo;
 		_outputWarnings = outputWarnings;
 	}
 	
@@ -37,7 +35,7 @@ internal class WindowsHidDevice : HidDevice
 		const UInt32 shareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
 		
 		var handle = Kernel32.CreateFileW(
-			_deviceInfo.DevicePath, desiredAccess, shareMode, IntPtr.Zero, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, IntPtr.Zero);
+			Info.DevicePath, desiredAccess, shareMode, IntPtr.Zero, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, IntPtr.Zero);
 		
 		if (handle.IsInvalid == false)
 		{
