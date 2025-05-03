@@ -16,6 +16,11 @@ public enum ErrorKind
 	DeviceInUse,
 	
 	/// <summary>
+	/// One or more of the specified arguments are invalid.
+	/// </summary>
+	InvalidArgument,
+	
+	/// <summary>
 	/// An unspecified error.
 	/// </summary>
 	Other

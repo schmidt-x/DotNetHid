@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using HidNet.Enums;
 
 namespace HidNet;
 
@@ -19,13 +20,33 @@ public abstract class HidDevice : IDisposable
 	}
 	
 	/// <summary>
-	/// Opens the device for communication.
+	/// Opens the device with the specified access mode.
 	/// </summary>
+	/// <param name="access">A <see cref="DeviceAccess"/> value that specifies the operations that can be performed on the device.</param>
 	/// <returns>A <see cref="HidError"/> instance describing the error if the operation fails; otherwise, null.</returns>
-	public abstract HidError? Open();
+	public abstract HidError? Open(DeviceAccess access);
 	
 	/// <summary>
-	/// Attempts to open the device.
+	/// Opens the device with read/write access mode.
+	/// </summary>
+	/// <returns>A <see cref="HidError"/> instance describing the error if the operation fails; otherwise, null.</returns>
+	public HidError? Open() => Open(DeviceAccess.ReadWrite);
+	
+	/// <summary>
+	/// Attempts to open the device with the specified access mode.
+	/// </summary>
+	/// <param name="access">A <see cref="DeviceAccess"/> value that specifies the operations that can be performed on the device.</param>
+	/// <param name="error">When this method returns, contains <see cref="HidError"/> describing the error
+	/// if the device failed to open; otherwise, null.</param>
+	/// <returns>True if succeeded; false otherwise.</returns>
+	public bool TryOpen(DeviceAccess access, [MaybeNullWhen(true)] out HidError error)
+	{
+		error = Open(access);
+		return error is null;
+	}
+	
+	/// <summary>
+	/// Attempts to open the device with read/write access mode.
 	/// </summary>
 	/// <param name="error">When this method returns, contains <see cref="HidError"/> describing the error
 	/// if the device failed to open; otherwise, null.</param>

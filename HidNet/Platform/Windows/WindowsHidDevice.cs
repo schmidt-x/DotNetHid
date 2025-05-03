@@ -21,7 +21,7 @@ internal class WindowsHidDevice : HidDevice
 		_outputWarnings = outputWarnings;
 	}
 	
-	public override HidError? Open()
+	public override HidError? Open(DeviceAccess deviceAccess)
 	{
 		if (_isOpen)
 		{
@@ -31,7 +31,14 @@ internal class WindowsHidDevice : HidDevice
 		
 		Debug.Assert(_handle is null);
 		
-		const UInt32 desiredAccess = GENERIC_READ | GENERIC_WRITE;
+		if (deviceAccess is < DeviceAccess.Read or > DeviceAccess.ReadWrite)
+		{
+			return new HidError(ErrorKind.InvalidArgument, "Invalid device access mode.");
+		}
+		
+		UInt32 desiredAccess = ((deviceAccess & DeviceAccess.Read) == DeviceAccess.Read ? GENERIC_READ : 0) |
+		                       ((deviceAccess & DeviceAccess.Write) == DeviceAccess.Write ? GENERIC_WRITE : 0);
+		
 		const UInt32 shareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
 		
 		var handle = Kernel32.CreateFileW(
