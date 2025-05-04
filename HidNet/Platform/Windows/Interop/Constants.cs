@@ -14,11 +14,13 @@ internal static class Constants
 	
 	#region winerror.h
 	
-	internal const int ERROR_FILE_NOT_FOUND      = 2;
-	internal const int ERROR_SHARING_VIOLATION   = 32;
-	internal const int ERROR_INSUFFICIENT_BUFFER = 122;
-	internal const int ERROR_NO_MORE_ITEMS       = 259;
-	internal const int ERROR_OPERATION_ABORTED   = 995;
+	internal const int ERROR_FILE_NOT_FOUND       = 2;
+	internal const int ERROR_SHARING_VIOLATION    = 32;
+	internal const int ERROR_INSUFFICIENT_BUFFER  = 122;
+	internal const int ERROR_NO_MORE_ITEMS        = 259;
+	internal const int ERROR_OPERATION_ABORTED    = 995;
+	internal const int ERROR_IO_PENDING           = 997;
+	internal const int ERROR_DEVICE_NOT_CONNECTED = 1167;
 	
 	#endregion
 	
@@ -47,6 +49,7 @@ internal static class Constants
 	#region winbase.h
 	
 	internal const UInt32 FILE_FLAG_OVERLAPPED = 0x40000000;
+	internal const UInt32 INFINITE             = 0xFFFFFFFF; // Infinite timeout
 	
 	#endregion
 }

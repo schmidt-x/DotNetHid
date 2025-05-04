@@ -85,4 +85,37 @@ internal static class Structs
 	}
 	
 	#endregion
+	
+	#region minwinbase.h
+	
+	[StructLayout(LayoutKind.Sequential)]
+	internal struct OVERLAPPED
+	{
+		public OVERLAPPED(IntPtr hEvent) => this.hEvent = hEvent;
+		
+		internal UIntPtr Internal;
+		internal UIntPtr InternalHigh;
+		internal DUMMYUNION DummyUnionName;
+		internal IntPtr hEvent;
+		
+		[StructLayout(LayoutKind.Explicit)]
+		internal struct DUMMYUNION
+		{
+			[FieldOffset(0)]
+			internal DUMMYSTRUCT DummyStructName;
+			
+			[FieldOffset(0)]
+			internal IntPtr Pointer;
+		}
+		
+		[StructLayout(LayoutKind.Sequential)]
+		internal struct DUMMYSTRUCT
+		{
+			internal UInt32 Offset;
+			internal UInt32 OffsetHigh;
+		}
+	}
+	
+	
+	#endregion
 }

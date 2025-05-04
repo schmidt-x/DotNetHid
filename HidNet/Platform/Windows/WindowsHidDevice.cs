@@ -11,13 +11,26 @@ namespace HidNet.Platform.Windows;
 
 internal class WindowsHidDevice : HidDevice
 {
-	private readonly bool _outputWarnings;
+	private readonly bool _outputWarnings; // TODO: do I really need it?
 	
 	private HANDLE? _handle;
 	private bool _isOpen;
+	
+	// Used throughout the lifetime of this device instance.
+	// Since the device remains reusable after calling .Dispose() (which just calls .Close()),
+	// this handle is not disposed manually and will be released only when its finalizer is called by the GC. 
+	private readonly HANDLE _manualEvent;
 
 	internal WindowsHidDevice(HidDeviceInfo info, bool outputWarnings) : base(info)
 	{
+		var hEvent = Kernel32.CreateEventW(IntPtr.Zero, true, false, null);
+		if (hEvent.IsInvalid)
+		{
+			int errorCode = Marshal.GetLastPInvokeError();
+			throw new SystemException($"Failed to create event: {Helpers.GetFormattedErrorMessage(errorCode)}");
+		}
+		
+		_manualEvent = hEvent;
 		_outputWarnings = outputWarnings;
 	}
 	
@@ -74,5 +87,63 @@ internal class WindowsHidDevice : HidDevice
 		
 		_handle = null;
 		_isOpen = false;
+	}
+		
+	public override HidError? Write(ReadOnlySpan<byte> output)
+	{
+		if (output.Length == 0) return null; // no-op
+		
+		if (output.Length > Info.OutputReportByteLength-1)
+		{
+			output = output[..(Info.OutputReportByteLength-1)];
+		}
+		
+		bool mustClose = false;
+		
+		if (!_isOpen) // If the device wasn't open initially, we'll open it and close it after we're done.
+		{
+			if (!TryOpen(DeviceAccess.Write, out var error)) return error;
+			mustClose = true;
+		}
+		
+		Debug.Assert(_handle is { IsInvalid: false, IsClosed: false });
+		
+		try
+		{
+			var ol = new Structs.OVERLAPPED(_manualEvent.DangerousGetHandle());
+			
+			Span<byte> buffer = stackalloc byte[Info.OutputReportByteLength];
+			output.CopyTo(buffer[1..]); // skip the Report ID
+			
+			if (Kernel32.WriteFile(_handle, ref MemoryMarshal.GetReference(buffer), Info.OutputReportByteLength, out _, ref ol))
+			{
+				return null; // completed synchronously
+			}
+			
+			var errorCode = Marshal.GetLastPInvokeError();
+			if (errorCode == ERROR_IO_PENDING)
+			{
+				if (Kernel32.GetOverlappedResultEx(_handle, ref ol, out var bytesWritten, INFINITE, false))
+				{
+					Debug.Assert(bytesWritten == Info.OutputReportByteLength);
+					return null;
+				}
+				errorCode = Marshal.GetLastPInvokeError();
+			}
+			
+			switch (errorCode)
+			{
+				case ERROR_DEVICE_NOT_CONNECTED: // device got disconnected
+					mustClose = true; // close the handle so the caller doesn't have to
+					return Errors.DeviceNotConnected;
+				
+				default:
+					return new HidError(ErrorKind.Other, $"Failed to write: {Helpers.GetFormattedErrorMessage(errorCode)}"); 
+				}
+		}
+		finally
+		{
+			if (mustClose) Close();
+		}
 	}
 }
