@@ -121,25 +121,18 @@ internal class WindowsHidDevice : HidDevice
 			}
 			
 			var errorCode = Marshal.GetLastPInvokeError();
-			if (errorCode == ERROR_IO_PENDING)
+			if (errorCode != ERROR_IO_PENDING)
 			{
-				if (Kernel32.GetOverlappedResultEx(_handle, ref ol, out var bytesWritten, INFINITE, false))
-				{
-					Debug.Assert(bytesWritten == Info.OutputReportByteLength);
-					return null;
-				}
-				errorCode = Marshal.GetLastPInvokeError();
+				return GetWriteError(errorCode, ref mustClose);
 			}
 			
-			switch (errorCode)
+			if (!Kernel32.GetOverlappedResultEx(_handle, ref ol, out var bytesWritten, INFINITE, false))
 			{
-				case ERROR_DEVICE_NOT_CONNECTED: // device got disconnected
-					mustClose = true; // close the handle so the caller doesn't have to
-					return Errors.DeviceNotConnected;
-				
-				default:
-					return new HidError(ErrorKind.Other, $"Failed to write: {Helpers.GetFormattedErrorMessage(errorCode)}"); 
+				return GetWriteError(Marshal.GetLastPInvokeError(), ref mustClose);
 			}
+			
+			Debug.Assert(bytesWritten == Info.OutputReportByteLength);
+			return null;
 		}
 		finally
 		{
@@ -171,51 +164,76 @@ internal class WindowsHidDevice : HidDevice
 			}
 			
 			int errorCode = Marshal.GetLastPInvokeError();
-			if (errorCode == ERROR_IO_PENDING)
+			if (errorCode != ERROR_IO_PENDING)
 			{
-				if (Kernel32.GetOverlappedResultEx(_handle, ref ol, out var bytesRead, unchecked((UInt32)timeout), false))
-				{
-					Debug.Assert(bytesRead == Info.InputReportByteLength);
-					return buffer[1..].ToArray(); // skip Report ID
-				}
-				
-				if ((errorCode = Marshal.GetLastPInvokeError())
-				    is WAIT_TIMEOUT         // timed out
-				    or ERROR_IO_INCOMPLETE) // 'timeout' was 0 and the operation is still in progress
-				{
-					if (Kernel32.CancelIoEx(_handle, ref ol))
-						return Errors.Timeout;
-					
-					switch (errorCode = Marshal.GetLastPInvokeError())
-					{
-					case ERROR_NOT_FOUND: // The IO operation had already been finished by the time we tried to cancel it.
-						if (Kernel32.GetOverlappedResultEx(_handle, ref ol, out bytesRead, 0, false))
-						{
-							Debug.Assert(bytesRead == Info.InputReportByteLength);
-							return buffer[1..].ToArray(); // skip Report ID
-						}
-						errorCode = Marshal.GetLastPInvokeError();
-						break; // fall through to error handling below
-					
-					default:
-						return new HidError(ErrorKind.Other, $"Failed to cancel read IO: {Helpers.GetFormattedErrorMessage(errorCode)}");
-					}
-				}
+				return GetReadError(errorCode, ref mustClose);
 			}
 			
-			switch (errorCode)
+			if (Kernel32.GetOverlappedResultEx(_handle, ref ol, out var bytesRead, unchecked((UInt32)timeout), false))
 			{
-			case ERROR_DEVICE_NOT_CONNECTED: // device got disconnected
-				mustClose = true; // close the handle so the caller doesn't have to
-				return Errors.DeviceNotConnected;
+				Debug.Assert(bytesRead == Info.InputReportByteLength);
+				return buffer[1..].ToArray(); // skip Report ID
+			}
+			
+			if ((errorCode = Marshal.GetLastPInvokeError())
+			    is not WAIT_TIMEOUT          // timed out
+			    and not ERROR_IO_INCOMPLETE) // 'timeout' was 0 and the operation is still in progress
+			{
+				return GetReadError(errorCode, ref mustClose);
+			}
+			
+			if (Kernel32.CancelIoEx(_handle, ref ol))
+			{
+				return Errors.Timeout;
+			}
+			
+			switch (errorCode = Marshal.GetLastPInvokeError())
+			{
+			case ERROR_NOT_FOUND: 
+				// The IO operation had already been finished by the time we tried to cancel it.
+				// Let's make another try and get the result.
+				if (!Kernel32.GetOverlappedResultEx(_handle, ref ol, out bytesRead, 0, false))
+				{
+					return GetReadError(Marshal.GetLastPInvokeError(), ref mustClose);
+				}
+				
+				Debug.Assert(bytesRead == Info.InputReportByteLength);
+				return buffer[1..].ToArray(); // skip Report ID
 			
 			default:
-				return new HidError(ErrorKind.Other, $"Failed to read: {Helpers.GetFormattedErrorMessage(errorCode)}");
+				return new HidError(ErrorKind.Other, $"Failed to cancel read IO: {Helpers.GetFormattedErrorMessage(errorCode)}");
 			}
 		}
 		finally
 		{
 			if (mustClose) Close();
+		}
+	}
+	
+	private static HidError GetWriteError(int errorCode, ref bool mustClose)
+	{
+		switch (errorCode)
+		{
+		case ERROR_DEVICE_NOT_CONNECTED: // device got disconnected
+			mustClose = true; // close the handle so the caller doesn't have to
+			return Errors.DeviceNotConnected;
+		
+		default:
+			return new HidError(ErrorKind.Other, $"Failed to write: {Helpers.GetFormattedErrorMessage(errorCode)}");
+		}
+	}
+	
+	// TODO: combine with GetWriteError?
+	private static HidError GetReadError(int errorCode, ref bool mustClose)
+	{
+		switch (errorCode)
+		{
+		case ERROR_DEVICE_NOT_CONNECTED: // device got disconnected
+			mustClose = true; // close the handle so the caller doesn't have to
+			return Errors.DeviceNotConnected;
+		
+		default:
+			return new HidError(ErrorKind.Other, $"Failed to read: {Helpers.GetFormattedErrorMessage(errorCode)}");
 		}
 	}
 }
