@@ -37,10 +37,19 @@ internal static partial class Kernel32
 	
 	[LibraryImport(LibName, SetLastError = true)]
 	[return: MarshalAs(UnmanagedType.Bool)]
+	internal static partial bool ReadFile(
+		HANDLE hFile, ref byte lpBuffer, UInt32 nNumberOfBytesToRead, out UInt32 lpNumberOfBytesRead, ref OVERLAPPED lpOverlapped);
+	
+	[LibraryImport(LibName, SetLastError = true)]
+	[return: MarshalAs(UnmanagedType.Bool)]
 	internal static partial bool GetOverlappedResultEx(
 		HANDLE hFile,
 		ref OVERLAPPED lpOverlapped,
 		out UInt32 lpNumberOfBytesTransferred,
 		UInt32 dwMilliseconds,
 		[MarshalAs(UnmanagedType.Bool)] bool bAlertable);
+	
+	[LibraryImport(LibName, SetLastError = true)]
+	[return: MarshalAs(UnmanagedType.Bool)]
+	internal static partial bool CancelIoEx(HANDLE hFile, ref OVERLAPPED lpOverlapped);
 }

@@ -21,6 +21,11 @@ public enum ErrorKind
 	InvalidArgument,
 	
 	/// <summary>
+	/// Operation timed out.
+	/// </summary>
+	Timeout,
+	
+	/// <summary>
 	/// An unspecified error.
 	/// </summary>
 	Other

@@ -17,10 +17,13 @@ internal static class Constants
 	internal const int ERROR_FILE_NOT_FOUND       = 2;
 	internal const int ERROR_SHARING_VIOLATION    = 32;
 	internal const int ERROR_INSUFFICIENT_BUFFER  = 122;
+	internal const int WAIT_TIMEOUT               = 258;
 	internal const int ERROR_NO_MORE_ITEMS        = 259;
 	internal const int ERROR_OPERATION_ABORTED    = 995;
+	internal const int ERROR_IO_INCOMPLETE        = 996;
 	internal const int ERROR_IO_PENDING           = 997;
 	internal const int ERROR_DEVICE_NOT_CONNECTED = 1167;
+	internal const int ERROR_NOT_FOUND            = 1168;
 	
 	#endregion
 	
