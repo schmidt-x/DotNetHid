@@ -17,6 +17,18 @@ public readonly struct Result<T, TError>
 	
 	private Result(bool isSuccess, T? value, TError? error) => (IsSuccess, _value, _error) = (isSuccess, value, error);
 	
+	/// <summary>
+	/// Unwraps the result, indicating whether the result was successful.
+	/// </summary>
+	/// <param name="value">
+	/// When this method returns true, contains the unwrapped success value of type <see cref="T"/>;
+	/// otherwise, the default value.
+	/// </param>
+	/// <param name="error">
+	/// When this method returns false, contains the unwrapped error of type <see cref="TError"/>;
+	/// otherwise, the default value.
+	/// </param>
+	/// <returns>true if the result was successful; false otherwise.</returns>
 	public bool IsOk([MaybeNullWhen(false)] out T value, [MaybeNullWhen(true)] out TError error)
 	{
 		value = _value;
