@@ -1,7 +1,7 @@
-# HidNet
+# DotNetHid
 
-![NuGet Version](https://img.shields.io/nuget/v/HidNet)
-![GitHub License](https://img.shields.io/github/license/schmidt-x/HidNet)
+![NuGet Version](https://img.shields.io/nuget/v/DotNetHid)
+![GitHub License](https://img.shields.io/github/license/schmidt-x/DotNetHid)
 
 .Net library for communicating with HID (Human Interface Devices). This library allows you to discover connected HID
 devices (such as keyboards, mice, etc.) and establish bidirectional communication with them.

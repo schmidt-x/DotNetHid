@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using HidNet.Platform.Windows.SafeHandles;
-using static HidNet.Platform.Windows.Interop.Structs;
+using DotNetHid.Platform.Windows.SafeHandles;
+using static DotNetHid.Platform.Windows.Interop.Structs;
 
-namespace HidNet.Platform.Windows.Interop;
+namespace DotNetHid.Platform.Windows.Interop;
 
 internal static partial class SetupApi
 {

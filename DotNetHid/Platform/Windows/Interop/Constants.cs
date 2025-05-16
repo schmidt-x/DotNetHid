@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace HidNet.Platform.Windows.Interop;
+namespace DotNetHid.Platform.Windows.Interop;
 
 // ReSharper disable InconsistentNaming
 internal static class Constants

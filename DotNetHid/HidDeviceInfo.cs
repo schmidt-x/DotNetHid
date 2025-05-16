@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace HidNet;
+namespace DotNetHid;
 
 /// <summary>
 /// Device description.

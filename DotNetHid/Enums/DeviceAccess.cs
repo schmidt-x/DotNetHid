@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace HidNet.Enums;
+namespace DotNetHid.Enums;
 
 /// <summary>
 /// Defines constants for read, write, or read/write access to a device.

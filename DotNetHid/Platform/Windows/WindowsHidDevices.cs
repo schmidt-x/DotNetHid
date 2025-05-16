@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using HidNet.Platform.Shared;
-using HidNet.Platform.Windows.Interop;
-using HidNet.Platform.Windows.SafeHandles;
-using static HidNet.Platform.Windows.Interop.Constants;
+using DotNetHid.Platform.Shared;
+using DotNetHid.Platform.Windows.Interop;
+using DotNetHid.Platform.Windows.SafeHandles;
+using static DotNetHid.Platform.Windows.Interop.Constants;
 
-namespace HidNet.Platform.Windows;
+namespace DotNetHid.Platform.Windows;
 
 internal class WindowsHidDevices : HidDevices
 {

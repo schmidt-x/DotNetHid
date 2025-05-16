@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
-using HidNet.Enums;
+using DotNetHid.Enums;
 
-namespace HidNet;
+namespace DotNetHid;
 
 /// <summary>
 /// Represents a HID device.

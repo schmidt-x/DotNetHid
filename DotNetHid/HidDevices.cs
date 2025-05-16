@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace HidNet;
+namespace DotNetHid;
 
 internal abstract class HidDevices
 {

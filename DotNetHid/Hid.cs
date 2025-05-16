@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using HidNet.Platform.Windows;
+using DotNetHid.Platform.Windows;
 
-namespace HidNet;
+namespace DotNetHid;
 
 /// <summary>
 /// An entry point for discovering devices and creating instances for communication.

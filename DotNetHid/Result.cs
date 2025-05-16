@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace HidNet;
+namespace DotNetHid;
 
 public readonly struct Result<T, TError>
 {

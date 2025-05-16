@@ -1,7 +1,7 @@
-﻿using HidNet.Platform.Windows.Interop;
+﻿using DotNetHid.Platform.Windows.Interop;
 using Microsoft.Win32.SafeHandles;
 
-namespace HidNet.Platform.Windows.SafeHandles;
+namespace DotNetHid.Platform.Windows.SafeHandles;
 
 internal class DeviceInfoSetHandle : SafeHandleMinusOneIsInvalid
 {

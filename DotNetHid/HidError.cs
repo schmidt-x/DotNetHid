@@ -1,6 +1,6 @@
-﻿using HidNet.Enums;
+﻿using DotNetHid.Enums;
 
-namespace HidNet;
+namespace DotNetHid;
 
 /// <summary>
 /// Error description.

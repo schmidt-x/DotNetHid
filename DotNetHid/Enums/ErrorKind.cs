@@ -1,4 +1,4 @@
-﻿namespace HidNet.Enums;
+﻿namespace DotNetHid.Enums;
 
 /// <summary>
 /// Represents the kinds of errors that can occur when accessing or interacting with a HID device.

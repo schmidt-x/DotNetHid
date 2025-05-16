@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 
-namespace HidNet.Platform.Windows.Interop;
+namespace DotNetHid.Platform.Windows.Interop;
 
 // ReSharper disable InconsistentNaming
 internal static class Structs
