@@ -8,7 +8,7 @@
 		<DebugType>embedded</DebugType>
 		
 		<PackageId>DotNetHid</PackageId>
-		<Version>0.1.0</Version>
+		<Version>0.1.1</Version>
 		<PackageTags>HID</PackageTags>
 		<Authors>Stefano Schmidt</Authors>
 		<PackageDescription>.NET library for communicating with HID devices</PackageDescription>
