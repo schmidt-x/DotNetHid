@@ -42,6 +42,6 @@ internal static partial class SetupApi
 		ref SP_DEVICE_INTERFACE_DATA deviceInterfaceData,
 		SP_DEVICE_INTERFACE_DETAIL_DATA_W deviceInterfaceDetailData,
 		UInt32 deviceInterfaceDetailDataSize,
-		UInt32 requiredSize,
+		IntPtr requiredSize,
 		IntPtr deviceInfoData);
 }

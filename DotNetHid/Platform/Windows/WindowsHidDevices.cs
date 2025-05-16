@@ -165,7 +165,8 @@ internal class WindowsHidDevices : HidDevices
 			
 			using var interfaceDetailData = new Structs.SP_DEVICE_INTERFACE_DETAIL_DATA_W(requiredSize);
 			
-			if (!SetupApi.SetupDiGetDeviceInterfaceDetailW(hDevInfo, ref interfaceData, interfaceDetailData, requiredSize, 0u, IntPtr.Zero))
+			if (!SetupApi.SetupDiGetDeviceInterfaceDetailW(
+				hDevInfo, ref interfaceData, interfaceDetailData, requiredSize, IntPtr.Zero, IntPtr.Zero))
 			{
 				if (!OutputWarnings) continue;
 				error = Marshal.GetLastPInvokeError();
