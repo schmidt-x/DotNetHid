@@ -5,6 +5,20 @@
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<DebugType>embedded</DebugType>
+		
+		<PackageId>DotNetHid</PackageId>
+		<Version>0.1.0</Version>
+		<PackageTags>HID</PackageTags>
+		<Authors>Stefano Schmidt</Authors>
+		<PackageDescription>.NET library for communicating with HID devices</PackageDescription>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<RepositoryUrl>https://github.com/schmidt-x/DotNetHid</RepositoryUrl>
 	</PropertyGroup>
+	
+	<ItemGroup>
+		<None Include="../README.md" Pack="true" PackagePath="/" />
+	</ItemGroup>
 
 </Project>
