@@ -1,0 +1,76 @@
+name: Build and Upload
+on: 
+  push:
+    branches: [ '*' ]
+    tags: [ '*' ]
+
+env:
+  PROJECT_NAME: DotNetHid
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    defaults:
+      run: 
+        working-directory: ${{ env.PROJECT_NAME }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            9.0.x
+            
+      - name: Restore
+        run: dotnet restore
+        
+      - name: Build
+        run: dotnet build -c Release --no-restore
+        
+      - name: Test
+        run: dotnet test -c Release --no-build
+        
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-outputs
+          path: |
+            ${{ env.PROJECT_NAME }}/bin
+            ${{ env.PROJECT_NAME }}/obj
+          if-no-files-found: error
+          retention-days: 1
+        
+  upload:
+    name: Upload
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref_type == 'tag'
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Download build outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: build-outputs
+          path: ${{ env.PROJECT_NAME }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            9.0.x
+            
+      - name: Pack
+        working-directory: ${{ env.PROJECT_NAME }}
+        run: dotnet pack -c Release --no-build -o ../nuget
+      
+      - name: Upload to NuGet.org
+        working-directory: nuget
+        run: > 
+          dotnet nuget push '${{ env.PROJECT_NAME }}.${{ github.ref_name }}.nupkg'
+          --api-key ${{ secrets.NUGET_API_KEY }}
+          --source https://api.nuget.org/v3/index.json

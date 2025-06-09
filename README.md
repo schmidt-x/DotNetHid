@@ -1,5 +1,6 @@
 # DotNetHid
 
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/schmidt-x/DotNetHid/build-and-upload.yml)](https://github.com/schmidt-x/DotNetHid/actions/workflows/build-and-upload.yml)
 [![NuGet Version](https://img.shields.io/nuget/v/DotNetHid)](https://www.nuget.org/packages/DotNetHid)
 [![GitHub License](https://img.shields.io/github/license/schmidt-x/DotNetHid)](https://github.com/schmidt-x/DotNetHid/blob/main/LICENSE.txt)
 

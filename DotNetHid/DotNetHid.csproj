@@ -10,11 +10,15 @@
 		<PackageId>DotNetHid</PackageId>
 		<Version>0.1.1</Version>
 		<PackageTags>HID</PackageTags>
-		<Authors>Stefano Schmidt</Authors>
+		<Authors>stefano</Authors>
 		<PackageDescription>.NET library for communicating with HID devices</PackageDescription>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<RepositoryUrl>https://github.com/schmidt-x/DotNetHid</RepositoryUrl>
+	</PropertyGroup>
+	
+	<PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
 	</PropertyGroup>
 	
 	<ItemGroup>
