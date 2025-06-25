@@ -66,6 +66,9 @@ public abstract class HidDevice : IDisposable
 	/// </summary>
 	public abstract void Close();
 	
+	protected abstract HidError? InternalWrite(ReadOnlySpan<byte> buffer);
+	protected abstract HidError? InternalRead(Span<byte> buffer, int timeout);
+	
 	/// <summary>
 	/// Sends an output report to the device.
 	/// </summary>
@@ -74,7 +77,18 @@ public abstract class HidDevice : IDisposable
 	/// <see cref="HidDeviceInfo.OutputReportByteLength"/>-1. If this limit is exceeded, the extra bytes are trimmed.
 	/// </param>
 	/// <returns>A <see cref="HidError"/> describing the error if the operation fails; otherwise, null.</returns>
-	public abstract HidError? Write(ReadOnlySpan<byte> output);
+	public HidError? Write(ReadOnlySpan<byte> output)
+	{
+		if (output.Length > Info.OutputReportByteLength-1)
+		{
+			output = output[..(Info.OutputReportByteLength-1)]; // trim exceeding bytes
+		}
+		
+		Span<byte> buffer = stackalloc byte[Info.OutputReportByteLength];
+		output.CopyTo(buffer[1..]); // skip Report ID
+		
+		return InternalWrite(buffer);
+	}
 	
 	/// <summary>
 	/// Tries to send an output report to the device.
@@ -103,25 +117,32 @@ public abstract class HidDevice : IDisposable
 	/// specify <see cref="Timeout.Infinite"/> (-1) or use the parameterless overload <see cref="Read()"/>.
 	/// </param>
 	/// <returns>
-	/// <see cref="Result{T,TError}"/> with either <see cref="byte"/>[] (if succeeded) or <see cref="HidError"/> (if failed).
-	/// The Report ID byte is omitted, so the length of the returned <see cref="byte"/>[] is always equal to
+	/// <see cref="Result{T,TError}"/> containing either a <see cref="byte"/>[] (if succeeded) or a <see cref="HidError"/>
+	/// (if failed). The Report ID byte is omitted, so the length of the returned <see cref="byte"/>[] is always equal to
 	/// <see cref="HidDeviceInfo.InputReportByteLength"/>-1.
 	/// </returns>
-	public abstract Result<byte[], HidError> Read(int timeout);
+	public Result<byte[], HidError> Read(int timeout)
+	{
+		Span<byte> buffer = stackalloc byte[Info.InputReportByteLength];
+		
+		HidError? error = InternalRead(buffer, timeout);
+		
+		return error is null ? buffer[1..].ToArray() : error;
+	}
 	
 	/// <summary>
 	/// Reads an input report from the device, waiting until the report is received. To specify a maximum wait time,
 	/// use the <see cref="Read(int)"/> overload.
 	/// </summary>
 	/// <returns>
-	/// <see cref="Result{T,TError}"/> with either <see cref="byte"/>[] (if succeeded) or <see cref="HidError"/> (if failed).
-	/// The Report ID byte is omitted, so the length of the returned <see cref="byte"/>[] is always equal to
+	/// <see cref="Result{T,TError}"/> containing either a <see cref="byte"/>[] (if succeeded) or a <see cref="HidError"/>
+	/// (if failed). The Report ID byte is omitted, so the length of the returned <see cref="byte"/>[] is always equal to
 	/// <see cref="HidDeviceInfo.InputReportByteLength"/>-1.
 	/// </returns>
 	public Result<byte[], HidError> Read() => Read(Timeout.Infinite);
 	
-	// None of the derived classes are intended to implement finalizers, therefore,
-	// calling GC.SuppressFinalizer is unnecessary.
+	// None of the derived classes are intended to implement finalizers,
+	// therefore, calling GC.SuppressFinalizer is unnecessary.
 #pragma warning disable CA1816
 	public void Dispose() => Close();
 #pragma warning restore CA1816

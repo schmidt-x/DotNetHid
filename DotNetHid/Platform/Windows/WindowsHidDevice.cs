@@ -88,15 +88,10 @@ internal class WindowsHidDevice : HidDevice
 		_handle = null;
 		_isOpen = false;
 	}
-		
-	public override HidError? Write(ReadOnlySpan<byte> output)
+	
+	protected override HidError? InternalWrite(ReadOnlySpan<byte> buffer)
 	{
-		if (output.Length == 0) return null; // no-op
-		
-		if (output.Length > Info.OutputReportByteLength-1)
-		{
-			output = output[..(Info.OutputReportByteLength-1)];
-		}
+		Debug.Assert(buffer.Length == Info.OutputReportByteLength);
 		
 		bool mustClose = false;
 		
@@ -111,9 +106,6 @@ internal class WindowsHidDevice : HidDevice
 		try
 		{
 			var ol = new Structs.OVERLAPPED(_manualEvent.DangerousGetHandle());
-			
-			Span<byte> buffer = stackalloc byte[Info.OutputReportByteLength];
-			output.CopyTo(buffer[1..]); // skip the Report ID
 			
 			if (Kernel32.WriteFile(_handle, ref MemoryMarshal.GetReference(buffer), Info.OutputReportByteLength, out _, ref ol))
 			{
@@ -140,8 +132,10 @@ internal class WindowsHidDevice : HidDevice
 		}
 	}
 	
-	public override Result<byte[], HidError> Read(int timeout)
+	protected override HidError? InternalRead(Span<byte> buffer, int timeout)
 	{
+		Debug.Assert(buffer.Length == Info.InputReportByteLength);
+		
 		bool mustClose = false;
 		
 		if (!_isOpen)
@@ -155,12 +149,10 @@ internal class WindowsHidDevice : HidDevice
 		try
 		{
 			var ol = new Structs.OVERLAPPED(_manualEvent.DangerousGetHandle());
-			Span<byte> buffer = stackalloc byte[Info.InputReportByteLength];
 			
 			if (Kernel32.ReadFile(_handle, ref MemoryMarshal.GetReference(buffer), Info.InputReportByteLength, out _, ref ol))
 			{
-				// completed synchronously
-				return buffer[1..].ToArray(); // skip Report ID
+				return null; // completed synchronously
 			}
 			
 			int errorCode = Marshal.GetLastPInvokeError();
@@ -172,7 +164,7 @@ internal class WindowsHidDevice : HidDevice
 			if (Kernel32.GetOverlappedResultEx(_handle, ref ol, out var bytesRead, unchecked((UInt32)timeout), false))
 			{
 				Debug.Assert(bytesRead == Info.InputReportByteLength);
-				return buffer[1..].ToArray(); // skip Report ID
+				return null;
 			}
 			
 			if ((errorCode = Marshal.GetLastPInvokeError())
@@ -198,7 +190,7 @@ internal class WindowsHidDevice : HidDevice
 				}
 				
 				Debug.Assert(bytesRead == Info.InputReportByteLength);
-				return buffer[1..].ToArray(); // skip Report ID
+				return null;
 			
 			default:
 				return new HidError(ErrorKind.Other, $"Failed to cancel read IO: {Helpers.GetFormattedErrorMessage(errorCode)}");
