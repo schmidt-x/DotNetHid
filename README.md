@@ -16,6 +16,8 @@ display on its screen, or to remap input reports received from the keyboard to c
 Usage:
 
 ```csharp
+using DotNetHid;
+
 ushort vendorId  = 0x00; // device Vendor ID
 ushort productId = 0x00; // device Product ID
 ushort usagePage = 0x00; // HID Usage Page

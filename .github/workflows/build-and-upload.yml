@@ -1,8 +1,9 @@
 name: Build and Upload
 on: 
   push:
-    branches: [ '*' ]
-    tags: [ '*' ]
+    branches: [ main ]
+    paths-ignore: [ '**.md' ]
+    tags: [ '*.*.*' ]
 
 env:
   PROJECT_NAME: DotNetHid
