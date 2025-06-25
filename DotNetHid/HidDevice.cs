@@ -27,6 +27,15 @@ public abstract class HidDevice : IDisposable
 	public abstract HidError? Open(DeviceAccess access);
 	
 	/// <summary>
+	/// Closes the device.
+	/// </summary>
+	public abstract void Close();
+	
+	protected abstract HidError? InternalWrite(ReadOnlySpan<byte> buffer);
+	
+	protected abstract HidError? InternalRead(Span<byte> buffer, int timeout);
+	
+	/// <summary>
 	/// Opens the device with read/write access mode.
 	/// </summary>
 	/// <returns>A <see cref="HidError"/> describing the error if the device fails to open; otherwise, null.</returns>
@@ -60,14 +69,6 @@ public abstract class HidDevice : IDisposable
 		error = Open();
 		return error is null;
 	}
-	
-	/// <summary>
-	/// Closes the device.
-	/// </summary>
-	public abstract void Close();
-	
-	protected abstract HidError? InternalWrite(ReadOnlySpan<byte> buffer);
-	protected abstract HidError? InternalRead(Span<byte> buffer, int timeout);
 	
 	/// <summary>
 	/// Sends an output report to the device.
@@ -140,6 +141,85 @@ public abstract class HidDevice : IDisposable
 	/// <see cref="HidDeviceInfo.InputReportByteLength"/>-1.
 	/// </returns>
 	public Result<byte[], HidError> Read() => Read(Timeout.Infinite);
+	
+	/// <summary>
+	/// Reads an input report from the device, waiting up to the specified timeout period.
+	/// </summary>
+	/// <param name="destination">
+	/// The destination buffer that receives the input. The Report ID byte is omitted, so at most
+	/// <see cref="HidDeviceInfo.InputReportByteLength"/>-1 bytes may be copied into the buffer.
+	/// </param>
+	/// <param name="timeout">
+	/// The maximum time to wait for the input report, in milliseconds. If the operation times out, the returned
+	/// <see cref="HidError"/> will have its member <see cref="HidError.Kind"/> set to <see cref="ErrorKind.Timeout"/>.
+	/// Specify 0 to immediately return if no report is available. To wait infinitely until a report is received, either
+	/// specify <see cref="Timeout.Infinite"/> (-1) or use the <see cref="Read(Span&lt;byte&gt;)"/> overload.
+	/// </param>
+	/// <returns>A <see cref="HidError"/> describing the error if the operation fails; otherwise, null.</returns>
+	public HidError? Read(Span<byte> destination, int timeout)
+	{
+		Span<byte> buffer = stackalloc byte[Info.InputReportByteLength];
+		
+		if (InternalRead(buffer, timeout) is { } error)
+		{
+			return error;
+		}
+		
+		buffer[1..Math.Min(destination.Length+1, buffer.Length)].CopyTo(destination);
+		return null;
+	}
+	
+	/// <summary>
+	/// Reads an input report from the device, waiting until the report is received. To specify a maximum wait time,
+	/// use the <see cref="Read(Span&lt;byte&gt;, int)"/> overload.
+	/// </summary>
+	/// <param name="destination">
+	/// The destination buffer that receives the input. The Report ID byte is omitted, so at most
+	/// <see cref="HidDeviceInfo.InputReportByteLength"/>-1 bytes may be copied into the buffer.
+	/// </param>
+	/// <returns>A <see cref="HidError"/> describing the error if the operation fails; otherwise, null.</returns>
+	public HidError? Read(Span<byte> destination) => Read(destination, Timeout.Infinite);
+	
+	/// <summary>
+	/// Tries to read an input report from the device, waiting up to the specified timeout period.
+	/// </summary>
+	/// <param name="destination">
+	/// The destination buffer that receives the input. The Report ID byte is omitted, so at most
+	/// <see cref="HidDeviceInfo.InputReportByteLength"/>-1 bytes may be copied into the buffer.
+	/// </param>
+	/// <param name="timeout">
+	/// The maximum time to wait for the input report, in milliseconds. If the operation times out, the returned
+	/// <see cref="HidError"/> will have its member <see cref="HidError.Kind"/> set to <see cref="ErrorKind.Timeout"/>.
+	/// Specify 0 to immediately return if no report is available. To wait infinitely until a report is received, either
+	/// specify <see cref="Timeout.Infinite"/> (-1) or use the <see cref="TryRead(Span&lt;byte&gt;, out HidError)"/> overload.
+	/// </param>
+	/// <param name="error">
+	/// When this method returns false, contains a <see cref="HidError"/> describing the error; otherwise, null.
+	/// </param>
+	/// <returns>True if succeeded; false otherwise.</returns>
+	public bool TryRead(Span<byte> destination, int timeout, [MaybeNullWhen(true)] out HidError error)
+	{
+		error = Read(destination, timeout);
+		return error is null;
+	}
+	
+	/// <summary>
+	/// Tries to read an input report from the device, waiting until the report is received. To specify a maximum wait
+	/// time, use the <see cref="TryRead(Span&lt;byte&gt;, int, out HidError)"/> overload.
+	/// </summary>
+	/// <param name="destination">
+	/// The destination buffer that receives the input. The Report ID byte is omitted, so at most
+	/// <see cref="HidDeviceInfo.InputReportByteLength"/>-1 bytes may be copied into the buffer.
+	/// </param>
+	/// <param name="error">
+	/// When this method returns false, contains a <see cref="HidError"/> describing the error; otherwise, null.
+	/// </param>
+	/// <returns>True if succeeded; false otherwise.</returns>
+	public bool TryRead(Span<byte> destination, [MaybeNullWhen(true)] out HidError error)
+	{
+		error = Read(destination);
+		return error is null;
+	}
 	
 	// None of the derived classes are intended to implement finalizers,
 	// therefore, calling GC.SuppressFinalizer is unnecessary.
